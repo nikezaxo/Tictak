@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semsem Mates Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #000000;
+            color: #fbc02d; /* Dark Yellow */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 300px; /* Reduced size */
+            position: relative;
+        }
+
+        h1 {
+            color: #fbc02d; /* Dark Yellow */
+            font-size: 2em; /* Reduced size */
+            margin: 10px 0; /* Reduced margin */
+        }
+
+        #gameBoard {
+            display: grid;
+            grid-template-columns: repeat(3, 80px); /* Reduced size */
+            grid-gap: 8px; /* Reduced gap */
+            margin: 20px auto;
+        }
+
+        .cell {
+            width: 80px; /* Reduced size */
+            height: 80px; /* Reduced size */
+            background-image: url('jif1.gif'); /* Set the GIF as background */
+            background-size: cover; /* Ensure the GIF covers the entire cell */
+            background-position: center;
+            border: 4px solid #fbc02d; /* Dark Yellow */
+            border-radius: 8px; /* Reduced radius */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            font-size: 36px; /* Reduced font size */
+        }
+
+        .cell:hover {
+            background-color: rgba(255, 193, 0, 0.5); /* Semi-transparent yellow */
+        }
+
+        .cell.X {
+            color: #004d00; /* Dark Green */
+        }
+
+        .cell.O {
+            color: #b71c1c; /* Dark Red */
+        }
+
+        #status {
+            font-size: 18px; /* Reduced font size */
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        #score {
+            font-size: 16px; /* Reduced font size */
+            font-weight: bold;
+            margin: 10px;
+        }
+
+        #countdown {
+            font-size: 20px; /* Reduced font size */
+            font-weight: bold;
+            color: #fbc02d; /* Dark Yellow */
+            margin: 10px;
+        }
+
+        #controls {
+            margin-bottom: 10px; /* Reduced margin */
+        }
+
+        #controls button {
+            margin: 5px;
+            padding: 8px 16px; /* Reduced padding */
+            background-color: #fbc02d; /* Dark Yellow */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px; /* Reduced font size */
+            transition: background-color 0.3s;
+        }
+
+        #controls button:hover {
+            background-color: #f9a825; /* Slightly lighter yellow */
+        }
+
+        #telegramLink {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        #telegramLink img {
+            width: 60px; /* Adjusted size */
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Semsem Mates Tic Tac Toe</h1>
+        <div id="controls">
+            <button id="startBtn">Start Game</button>
+        </div>
+        <div id="score">Score: Player X - $Wish: 0 | Player O - $Wish: 0</div>
+        <div id="countdown">Time left: 60s</div>
+        <div id="gameBoard">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        <div id="status">Player X's turn.</div>
+        <div id="telegramLink">
+            <a href="https://t.me/semsemcoin" target="_blank">
+                <img src="telegram.gif" alt="Telegram">
+            </a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.cell');
+            const statusDiv = document.getElementById('status');
+            const scoreDiv = document.getElementById('score');
+            const countdownDiv = document.getElementById('countdown');
+            const startBtn = document.getElementById('startBtn');
+
+            let game = {
+                board: ['', '', '', '', '', '', '', '', ''],
+                currentPlayer: 'X',
+                gameActive: false,
+                score: { X: 0, O: 0 },
+                timer: null,
+                timeLeft: 60
+            };
+
+            function updateBoard(board) {
+                cells.forEach((cell, i) => {
+                    cell.innerText = board[i];
+                    cell.className = `cell ${board[i]}`; // Add class based on player
+                });
+            }
+
+            function checkWinner(board) {
+                const winningConditions = [
+                    [0, 1, 2],
+                    [3, 4, 5],
+                    [6, 7, 8],
+                    [0, 3, 6],
+                    [1, 4, 7],
+                    [2, 5, 8],
+                    [0, 4, 8],
+                    [2, 4, 6]
+                ];
+                return winningConditions.some(condition => {
+                    const [a, b, c] = condition;
+                    return board[a] === board[b] && board[b] === board[c] && board[a] !== '';
+                });
+            }
+
+            function handleMove(index) {
+                if (!game.gameActive || game.board[index] !== '') return;
+
+                game.board[index] = game.currentPlayer;
+                if (checkWinner(game.board)) {
+                    game.gameActive = false;
+                    clearInterval(game.timer);
+                    statusDiv.innerText = game.currentPlayer === 'X' ? "You Won! 🎉" : "You Lost! 😢";
+                    statusDiv.className = game.currentPlayer === 'X' ? 'win' : 'lose';
+                    game.score[game.currentPlayer] += 10;  // Increase score by $Wish points
+                    updateScore();
+                } else if (game.board.every(cell => cell !== '')) {
+                    statusDiv.innerText = "It's a Draw! 😐";
+                    statusDiv.className = '';
+                } else {
+                    game.currentPlayer = game.currentPlayer === 'X' ? 'O' : 'X';
+                    statusDiv.innerText = `Player ${game.currentPlayer}'s turn.`;
+                    if (game.currentPlayer === 'O') {
+                        botMove();
+                    }
+                }
+                updateBoard(game.board);
+            }
+
+            function botMove() {
+                let availableMoves = game.board.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+                let move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+                setTimeout(() => handleMove(move), 500);
+            }
+
+            function startGame() {
+                game.board = ['', '', '', '', '', '', '', '', ''];
+                game.currentPlayer = 'X';
+                game.gameActive = true;
+                statusDiv.innerText = "Player X's turn.";
+                statusDiv.className = '';
+                updateBoard(game.board);
+                game.timeLeft = 60;
+                countdownDiv.innerText = `Time left: ${game.timeLeft}s`;
+                game.timer = setInterval(() => {
+                    game.timeLeft--;
+                    countdownDiv.innerText = `Time left: ${game.timeLeft}s`;
+                    if (game.timeLeft <= 0) {
+                        clearInterval(game.timer);
+                        game.gameActive = false;
+                        statusDiv.innerText = "Time's up! 😢";
+                    }
+                }, 1000);
+            }
+
+            function updateScore() {
+                scoreDiv.innerText = `Score: Player X - $Wish: ${game.score.X} | Player O - $Wish: ${game.score.O}`;
+            }
+
+            cells.forEach(cell => {
+                cell.addEventListener('click', () => handleMove(cell.getAttribute('data-index')));
+            });
+
+            startBtn.addEventListener('click', startGame);
+        });
+    </script>
+</body>
+</html>
